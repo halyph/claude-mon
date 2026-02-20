@@ -26,6 +26,20 @@ graph LR
     style E fill:#f05a28,stroke:#333,stroke-width:2px,color:#fff
 ```
 
+## Dashboard Preview
+
+### Full Dashboard
+![Grafana Dashboard Overview](images/dashboard/dashboard-overview.png)
+
+### Key Metrics
+![Summary Statistics](images/dashboard/dashboard-stats.png)
+
+### Trends and Analysis
+![Time Series Charts](images/dashboard/dashboard-trends.png)
+
+### Development Activity
+![Development Metrics](images/dashboard/dashboard-dev-activity.png)
+
 ## Prerequisites
 
 - Docker and Docker Compose installed
@@ -79,6 +93,8 @@ claude "test telemetry"
 - **API costs** - Per model (Sonnet, Haiku, etc.)
 - **Session activity** - Active time, session count
 - **Cache efficiency** - Cache hit rates
+- **Development metrics** - Lines changed, commits, pull requests
+- **Code editing** - Tool decisions and outcomes
 
 ## Service URLs
 
@@ -128,6 +144,10 @@ docker-compose down -v
 | `claude_code_token_usage_tokens_total` | Token count by type |
 | `claude_code_active_time_seconds_total` | Active session time |
 | `claude_code_session_count_total` | Number of sessions |
+| `claude_code_lines_of_code_count_total` | Lines of code changed (added/removed) |
+| `claude_code_pull_request_count_total` | Pull requests created via Claude Code |
+| `claude_code_commit_count_total` | Git commits created via Claude Code |
+| `claude_code_code_edit_tool_decision_total` | Code edit tool decisions (accept/reject) |
 
 ### Example Prometheus Queries
 

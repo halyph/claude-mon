@@ -67,11 +67,18 @@ All historical data preserved via Docker named volumes:
 Automates full stack initialization:
 1. Starts services via `docker-compose up -d`
 2. Waits for Grafana health endpoint
-3. Configures data sources via Grafana API:
-   - Prometheus: `http://prometheus:9090` (default)
-   - Loki: `http://loki:3100`
-4. Imports dashboard from `config/grafana/dashboards/claude-code-monitoring.json`
-5. Returns dashboard URL and next steps
+3. Configures data sources via Grafana API with **fixed UIDs**:
+   - Prometheus: `http://prometheus:9090` (UID: `prometheus-claude-code`, default)
+   - Loki: `http://loki:3100` (UID: `loki-claude-code`)
+4. Dynamically updates dashboard datasource references
+5. Imports dashboard from `config/grafana/dashboards/claude-code-monitoring.json`
+6. Returns dashboard URL and next steps
+
+**Datasource UID Strategy:**
+- Fixed UIDs prevent "datasource not found" errors on fresh installations
+- Dashboard JSON uses placeholders (`PROMETHEUS_UID`, `LOKI_UID`)
+- Setup script replaces placeholders with fixed UIDs before import
+- This ensures dashboard works immediately without manual configuration
 
 **Error handling:**
 - Exits with status 1 if dashboard file not found
@@ -114,4 +121,7 @@ When modifying configs:
 - Grafana anonymous auth is enabled (development only)
 - OTel Collector uses contrib image for Loki exporter
 - Dashboard UID: `claude-code-monitoring`
+- Datasource UIDs are fixed for reproducibility:
+  - Prometheus: `prometheus-claude-code`
+  - Loki: `loki-claude-code`
 - No traces pipeline (Claude Code doesn't export traces)

@@ -31,11 +31,12 @@ echo ""
 # Configure Grafana data sources
 echo "🔧 Configuring Grafana data sources..."
 
-# Add Prometheus data source
+# Add Prometheus data source with fixed UID
 curl -s -X POST \
   http://localhost:3000/api/datasources \
   -H 'Content-Type: application/json' \
   -d '{
+    "uid": "prometheus-claude-code",
     "name": "Prometheus",
     "type": "prometheus",
     "url": "http://prometheus:9090",
@@ -43,11 +44,12 @@ curl -s -X POST \
     "isDefault": true
   }' > /dev/null && echo "   ✓ Prometheus data source added"
 
-# Add Loki data source
+# Add Loki data source with fixed UID
 curl -s -X POST \
   http://localhost:3000/api/datasources \
   -H 'Content-Type: application/json' \
   -d '{
+    "uid": "loki-claude-code",
     "name": "Loki",
     "type": "loki",
     "url": "http://loki:3100",
@@ -59,10 +61,17 @@ echo "📊 Importing Claude Code dashboard..."
 DASHBOARD_FILE="config/grafana/dashboards/claude-code-monitoring.json"
 
 if [ -f "$DASHBOARD_FILE" ]; then
+    # Create temporary dashboard file with correct datasource UIDs
+    TEMP_DASHBOARD=$(mktemp)
+    sed 's/"uid": "PROMETHEUS_UID"/"uid": "prometheus-claude-code"/g' "$DASHBOARD_FILE" | \
+    sed 's/"uid": "LOKI_UID"/"uid": "loki-claude-code"/g' > "$TEMP_DASHBOARD"
+
     RESPONSE=$(curl -s -X POST \
       http://localhost:3000/api/dashboards/db \
       -H 'Content-Type: application/json' \
-      -d @"$DASHBOARD_FILE")
+      -d @"$TEMP_DASHBOARD")
+
+    rm "$TEMP_DASHBOARD"
 
     if echo "$RESPONSE" | grep -q '"status":"success"'; then
         echo "   ✓ Dashboard imported successfully"

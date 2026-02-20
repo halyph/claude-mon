@@ -26,7 +26,7 @@
       {
         "datasource": {
           "type": "prometheus",
-          "uid": "cfdtm1ypakagwd"
+          "uid": "PROMETHEUS_UID"
         },
         "fieldConfig": {
           "defaults": {
@@ -81,7 +81,7 @@
           {
             "datasource": {
               "type": "prometheus",
-              "uid": "cfdtm1ypakagwd"
+              "uid": "PROMETHEUS_UID"
             },
             "editorMode": "code",
             "expr": "sum(claude_code_cost_usage_USD_total)",
@@ -96,7 +96,7 @@
       {
         "datasource": {
           "type": "prometheus",
-          "uid": "cfdtm1ypakagwd"
+          "uid": "PROMETHEUS_UID"
         },
         "fieldConfig": {
           "defaults": {
@@ -151,7 +151,7 @@
           {
             "datasource": {
               "type": "prometheus",
-              "uid": "cfdtm1ypakagwd"
+              "uid": "PROMETHEUS_UID"
             },
             "editorMode": "code",
             "expr": "sum(claude_code_token_usage_tokens_total)",
@@ -166,7 +166,7 @@
       {
         "datasource": {
           "type": "prometheus",
-          "uid": "cfdtm1ypakagwd"
+          "uid": "PROMETHEUS_UID"
         },
         "fieldConfig": {
           "defaults": {
@@ -213,7 +213,7 @@
           {
             "datasource": {
               "type": "prometheus",
-              "uid": "cfdtm1ypakagwd"
+              "uid": "PROMETHEUS_UID"
             },
             "editorMode": "code",
             "expr": "sum(claude_code_active_time_seconds_total)",
@@ -228,7 +228,7 @@
       {
         "datasource": {
           "type": "prometheus",
-          "uid": "cfdtm1ypakagwd"
+          "uid": "PROMETHEUS_UID"
         },
         "fieldConfig": {
           "defaults": {
@@ -275,7 +275,7 @@
           {
             "datasource": {
               "type": "prometheus",
-              "uid": "cfdtm1ypakagwd"
+              "uid": "PROMETHEUS_UID"
             },
             "editorMode": "code",
             "expr": "sum(claude_code_session_count_total)",
@@ -290,7 +290,7 @@
       {
         "datasource": {
           "type": "prometheus",
-          "uid": "cfdtm1ypakagwd"
+          "uid": "PROMETHEUS_UID"
         },
         "fieldConfig": {
           "defaults": {
@@ -367,7 +367,7 @@
           {
             "datasource": {
               "type": "prometheus",
-              "uid": "cfdtm1ypakagwd"
+              "uid": "PROMETHEUS_UID"
             },
             "editorMode": "code",
             "expr": "sum by (model) (claude_code_cost_usage_USD_total)",
@@ -382,7 +382,7 @@
       {
         "datasource": {
           "type": "prometheus",
-          "uid": "cfdtm1ypakagwd"
+          "uid": "PROMETHEUS_UID"
         },
         "fieldConfig": {
           "defaults": {
@@ -459,7 +459,7 @@
           {
             "datasource": {
               "type": "prometheus",
-              "uid": "cfdtm1ypakagwd"
+              "uid": "PROMETHEUS_UID"
             },
             "editorMode": "code",
             "expr": "sum by (type) (claude_code_token_usage_tokens_total)",
@@ -474,7 +474,7 @@
       {
         "datasource": {
           "type": "prometheus",
-          "uid": "cfdtm1ypakagwd"
+          "uid": "PROMETHEUS_UID"
         },
         "fieldConfig": {
           "defaults": {
@@ -519,7 +519,7 @@
           {
             "datasource": {
               "type": "prometheus",
-              "uid": "cfdtm1ypakagwd"
+              "uid": "PROMETHEUS_UID"
             },
             "editorMode": "code",
             "expr": "sum by (model) (claude_code_cost_usage_USD_total)",
@@ -534,7 +534,7 @@
       {
         "datasource": {
           "type": "prometheus",
-          "uid": "cfdtm1ypakagwd"
+          "uid": "PROMETHEUS_UID"
         },
         "fieldConfig": {
           "defaults": {
@@ -587,7 +587,7 @@
           {
             "datasource": {
               "type": "prometheus",
-              "uid": "cfdtm1ypakagwd"
+              "uid": "PROMETHEUS_UID"
             },
             "editorMode": "code",
             "expr": "sum(claude_code_token_usage_tokens_total{type=\"cacheRead\"}) / (sum(claude_code_token_usage_tokens_total{type=\"cacheRead\"}) + sum(claude_code_token_usage_tokens_total{type=\"input\"}))",
@@ -602,7 +602,7 @@
       {
         "datasource": {
           "type": "prometheus",
-          "uid": "cfdtm1ypakagwd"
+          "uid": "PROMETHEUS_UID"
         },
         "fieldConfig": {
           "defaults": {
@@ -679,7 +679,7 @@
           {
             "datasource": {
               "type": "prometheus",
-              "uid": "cfdtm1ypakagwd"
+              "uid": "PROMETHEUS_UID"
             },
             "editorMode": "code",
             "expr": "sum by (type) (claude_code_active_time_seconds_total)",
@@ -694,7 +694,7 @@
       {
         "datasource": {
           "type": "prometheus",
-          "uid": "cfdtm1ypakagwd"
+          "uid": "PROMETHEUS_UID"
         },
         "fieldConfig": {
           "defaults": {
@@ -776,7 +776,7 @@
           {
             "datasource": {
               "type": "prometheus",
-              "uid": "cfdtm1ypakagwd"
+              "uid": "PROMETHEUS_UID"
             },
             "editorMode": "code",
             "exemplar": false,

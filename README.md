@@ -2,6 +2,13 @@
 
 Monitor Claude Code usage, costs, and performance using OpenTelemetry, Prometheus, Loki, and Grafana.
 
+> **Tested with**: Claude Code CLI v2.1.38
+> **Environment**: macOS with Colima (Docker Desktop alternative)
+
+## ⚠️ Environment Note
+
+This setup was developed and tested using [Colima](https://github.com/abiosoft/colima) on macOS. While it should work with Docker Desktop and other Docker environments, there may be networking or volume mounting differences. If you encounter issues on other platforms, please check your Docker configuration.
+
 ## Architecture
 
 ```mermaid
@@ -19,6 +26,12 @@ graph LR
     style E fill:#f05a28,stroke:#333,stroke-width:2px,color:#fff
 ```
 
+## Prerequisites
+
+- Docker and Docker Compose installed
+- Claude Code CLI v2.1+ installed
+- Port 3000, 3100, 4317, 8889, 9090 available
+
 ## Quick Start
 
 ### 1. Run Setup Script
@@ -27,10 +40,10 @@ graph LR
 ./setup.sh
 ```
 
-This will:
-- Start all services (OTel Collector, Prometheus, Loki, Grafana)
-- Configure Grafana data sources
-- Import the monitoring dashboard
+This automatically:
+- Starts all services
+- Configures Grafana data sources
+- Imports the monitoring dashboard
 
 ### 2. Enable Telemetry
 
@@ -48,44 +61,66 @@ Edit `~/.claude/settings.json`:
 }
 ```
 
+Restart Claude Code to apply changes.
+
 ### 3. View Dashboard
 
-Open http://localhost:3000/d/claude-code-monitoring
+Open: http://localhost:3000/d/claude-code-monitoring
 
-Run any Claude Code command to generate telemetry:
+Generate some telemetry:
+
 ```bash
 claude "test telemetry"
 ```
 
 ## What's Tracked
 
-- **Token usage** (input, output, cache reads/writes)
-- **API costs** by model
-- **Session activity** (active time, session count)
-- **Cache efficiency**
+- **Token usage** - Input, output, cache reads/writes
+- **API costs** - Per model (Sonnet, Haiku, etc.)
+- **Session activity** - Active time, session count
+- **Cache efficiency** - Cache hit rates
 
 ## Service URLs
 
-| Service | URL |
-|---------|-----|
-| Grafana | http://localhost:3000 |
-| Prometheus | http://localhost:9090 |
-| Loki | http://localhost:3100 |
+| Service | URL | Purpose |
+|---------|-----|---------|
+| Grafana | http://localhost:3000 | Main dashboard |
+| Prometheus | http://localhost:9090 | Metrics query UI |
+| Loki | http://localhost:3100 | Logs API |
 
 ## Common Commands
 
 ```bash
-# Stop all services
+# Stop services (data preserved)
 docker-compose down
+
+# Stop and delete all data
+docker-compose down -v
 
 # View logs
 docker-compose logs -f otel-collector
 
 # Restart services
 docker-compose restart
+
+# Check status
+docker-compose ps
 ```
 
-## Metrics
+## Data Persistence
+
+Your data is **automatically saved** in Docker volumes:
+- Metrics history (Prometheus)
+- Log history (Loki)
+- Dashboard settings (Grafana)
+
+Data persists across restarts. To reset completely:
+```bash
+docker-compose down -v
+./setup.sh
+```
+
+## Available Metrics
 
 | Metric | Description |
 |--------|-------------|
@@ -94,26 +129,71 @@ docker-compose restart
 | `claude_code_active_time_seconds_total` | Active session time |
 | `claude_code_session_count_total` | Number of sessions |
 
-### Example Queries
+### Example Prometheus Queries
 
-**Total cost:**
+**Total spending:**
 ```promql
 sum(claude_code_cost_usage_USD_total)
 ```
 
-**Cache hit rate:**
+**Cache efficiency:**
 ```promql
 sum(claude_code_token_usage_tokens_total{type="cacheRead"}) /
 (sum(claude_code_token_usage_tokens_total{type="cacheRead"}) +
  sum(claude_code_token_usage_tokens_total{type="input"}))
 ```
 
+**Cost per hour:**
+```promql
+rate(claude_code_cost_usage_USD_total[1h]) * 3600
+```
+
 ## Troubleshooting
 
-**No data appearing?**
-1. Check telemetry is enabled: `cat ~/.claude/settings.json`
-2. Verify services are running: `docker-compose ps`
-3. Check OTel Collector logs: `docker-compose logs otel-collector`
+### No data appearing?
 
-**Port conflicts?**
-Edit `docker-compose.yml` to change port mappings.
+1. Verify telemetry is enabled:
+   ```bash
+   cat ~/.claude/settings.json
+   ```
+   Should show `CLAUDE_CODE_ENABLE_TELEMETRY: "1"`
+
+2. Check services are running:
+   ```bash
+   docker-compose ps
+   ```
+   All should show "Up"
+
+3. Check OTel Collector is receiving data:
+   ```bash
+   docker-compose logs otel-collector | grep -i received
+   ```
+
+4. Verify Prometheus is scraping:
+   ```bash
+   curl -s http://localhost:9090/api/v1/targets | jq '.data.activeTargets[].health'
+   ```
+
+### Port already in use?
+
+Edit `docker-compose.yml` and change port mappings:
+```yaml
+ports:
+  - "13000:3000"  # Use 13000 instead of 3000
+```
+
+### Colima-specific issues?
+
+- Check Colima is running: `colima status`
+- Verify Docker socket: `docker ps`
+- Try restarting: `colima restart`
+
+### Dashboard shows "No Data"?
+
+1. Generate some telemetry: `claude "echo test"`
+2. Wait 10-15 seconds for data to propagate
+3. Check Prometheus has data: `curl -s http://localhost:8889/metrics | grep claude_code`
+
+## Security Note
+
+⚠️ This setup uses **anonymous admin access** in Grafana for ease of use. This is suitable for local development only. Do not expose these services to the internet.

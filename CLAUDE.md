@@ -1,89 +1,117 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides technical guidance to Claude Code when working with this repository.
 
 ## Project Overview
 
-This repository provides a complete observability stack for monitoring Claude Code sessions. It uses OpenTelemetry (OTel) as the ingestion gateway, Prometheus for metrics storage, Loki for log aggregation, and Grafana for visualization.
+Observability stack for monitoring Claude Code sessions via OpenTelemetry, Prometheus, Loki, and Grafana.
+
+## Repository Structure
+
+```
+claude-mon/
+├── setup.sh                                     # Automated setup (starts services, configures Grafana via API)
+├── docker-compose.yml                           # Service orchestration with persistent volumes
+└── config/                                      # All configuration files
+    ├── otel-collector.yaml                      # OTel: receives OTLP on :4317, exports to Prometheus/Loki
+    ├── prometheus.yaml                          # Prometheus: scrapes OTel :8889 every 5s
+    └── grafana/dashboards/
+        └── claude-code-monitoring.json          # Dashboard with 10 panels (costs, tokens, cache, etc.)
+```
 
 ## Architecture
 
-The monitoring pipeline follows this flow:
+**Data Flow:**
 ```
-Claude Code → OTLP (gRPC port 4317) → OTel Collector → {Prometheus, Loki} → Grafana
+Claude Code → OTLP gRPC :4317 → OTel Collector → Prometheus :9090 (metrics)
+                                                → Loki :3100 (logs)
+                                                ↓
+                                            Grafana :3000 (visualization)
 ```
 
 **Components:**
-- **OTel Collector**: Gateway that receives telemetry via OTLP protocol and routes it to appropriate backends
-  - Receives metrics and logs on port 4317 (OTLP gRPC)
-  - Exposes Prometheus scrape endpoint on port 8889
-- **Prometheus**: Time-series database for metrics (token usage, costs, etc.)
-  - UI available at http://localhost:9090
-  - Scrapes metrics from OTel Collector every 5 seconds
-- **Loki**: Log aggregation system for conversation history and tool execution logs
-  - API available at http://localhost:3100
-- **Grafana**: Unified visualization dashboard
-  - UI available at http://localhost:3000
-  - Pre-configured with anonymous admin access for ease of use
+1. **OTel Collector** (otel/opentelemetry-collector-contrib)
+   - Receives: OTLP gRPC on :4317
+   - Exports: Prometheus metrics on :8889, Loki logs via OTLP HTTP
+   - Config: `config/otel-collector.yaml`
+   - Pipelines: metrics (otlp→prometheus), logs (otlp→loki+debug)
 
-## Common Commands
+2. **Prometheus** (prom/prometheus)
+   - Scrapes: OTel Collector :8889 every 5s
+   - Storage: `prometheus-data` volume at `/prometheus`
+   - Config: `config/prometheus.yaml`
 
-### Quick setup (automated)
-```bash
-./setup.sh
-```
-This script starts all services, configures Grafana data sources, and imports the dashboard.
+3. **Loki** (grafana/loki)
+   - Receives: Logs from OTel Collector via OTLP HTTP
+   - Storage: `loki-data` volume at `/loki`
+   - Uses: Default local config
 
-### Start the monitoring stack (manual)
-```bash
-docker-compose up -d
-```
+4. **Grafana** (grafana/grafana)
+   - Storage: `grafana-data` volume at `/var/lib/grafana`
+   - Auth: Anonymous admin enabled (local dev only)
+   - Config: Via `setup.sh` using Grafana API
 
-### Stop the monitoring stack
-```bash
-docker-compose down
-```
+## Data Persistence
 
-### View logs from all services
-```bash
-docker-compose logs -f
-```
+All historical data preserved via Docker named volumes:
+- `prometheus-data`: Metrics time-series
+- `loki-data`: Log streams
+- `grafana-data`: Dashboards, data sources, settings
 
-### View logs from a specific service
-```bash
-docker-compose logs -f [otel-collector|prometheus|loki|grafana]
-```
+**Lifecycle:**
+- `docker-compose down`: Volumes persist
+- `docker-compose down -v`: Volumes deleted
 
-### Restart a specific service
-```bash
-docker-compose restart [service-name]
-```
+## Setup Script (`setup.sh`)
 
-### Check service status
-```bash
-docker-compose ps
-```
+Automates full stack initialization:
+1. Starts services via `docker-compose up -d`
+2. Waits for Grafana health endpoint
+3. Configures data sources via Grafana API:
+   - Prometheus: `http://prometheus:9090` (default)
+   - Loki: `http://loki:3100`
+4. Imports dashboard from `config/grafana/dashboards/claude-code-monitoring.json`
+5. Returns dashboard URL and next steps
 
-## Configuration Files
+**Error handling:**
+- Exits with status 1 if dashboard file not found
+- Validates API response for successful import
 
-- **docker-compose.yml**: Defines all services and their networking
-- **config/otel-collector.yaml**: Configures OTel Collector receivers, exporters, and pipelines
-  - Metrics pipeline: OTLP → Prometheus exporter
-  - Logs pipeline: OTLP → Loki exporter + console logging
-- **config/prometheus.yaml**: Configures Prometheus scrape targets
-- **config/grafana/dashboards/**: Grafana dashboard definitions
+## Metrics Exported by Claude Code
 
-## Making Configuration Changes
+When `CLAUDE_CODE_ENABLE_TELEMETRY=1`:
+- `claude_code_cost_usage_USD_total`: Cost by model, session
+- `claude_code_token_usage_tokens_total`: Tokens by type (input/output/cacheRead/cacheCreation)
+- `claude_code_active_time_seconds_total`: Session duration by type (cli/user)
+- `claude_code_session_count_total`: Session counter
 
-When modifying configuration files:
-1. Edit the relevant YAML file
-2. Restart the affected service: `docker-compose restart [service-name]`
-3. For OTel Collector changes, verify the new config loads without errors: `docker-compose logs otel-collector`
+Labels: `model`, `session_id`, `terminal_type`, `user_id`, `type`
 
-## Ports Reference
+## Configuration Changes
 
-- **4317**: OTel Collector OTLP gRPC endpoint (Claude Code sends data here)
-- **8889**: OTel Collector Prometheus metrics endpoint
-- **9090**: Prometheus UI and API
-- **3100**: Loki API endpoint
-- **3000**: Grafana dashboard UI
+When modifying configs:
+1. Edit YAML in `config/` directory
+2. Restart affected service: `docker-compose restart [service-name]`
+3. Verify logs: `docker-compose logs [service-name]`
+
+**Key files to update:**
+- OTel pipelines: `config/otel-collector.yaml`
+- Scrape intervals: `config/prometheus.yaml`
+- Dashboard panels: `config/grafana/dashboards/*.json`
+
+## Port Mappings
+
+| Port | Service | Purpose |
+|------|---------|---------|
+| 4317 | OTel Collector | OTLP gRPC ingestion |
+| 8889 | OTel Collector | Prometheus metrics endpoint |
+| 9090 | Prometheus | Query UI and API |
+| 3100 | Loki | Log API |
+| 3000 | Grafana | Dashboard UI |
+
+## Important Notes
+
+- Grafana anonymous auth is enabled (development only)
+- OTel Collector uses contrib image for Loki exporter
+- Dashboard UID: `claude-code-monitoring`
+- No traces pipeline (Claude Code doesn't export traces)

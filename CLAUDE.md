@@ -16,7 +16,7 @@ claude-mon/
     ├── otel-collector.yaml                      # OTel: receives OTLP on :4317, exports to Prometheus/Loki
     ├── prometheus.yaml                          # Prometheus: scrapes OTel :8889 every 5s
     └── grafana/dashboards/
-        └── claude-code-monitoring.json          # Dashboard with 10 panels (costs, tokens, cache, etc.)
+        └── claude-code-monitoring.json          # Dashboard with 16 panels (costs, tokens, cache, LOC, commits, etc.)
 ```
 
 ## Architecture
@@ -86,13 +86,55 @@ Automates full stack initialization:
 
 ## Metrics Exported by Claude Code
 
-When `CLAUDE_CODE_ENABLE_TELEMETRY=1`:
-- `claude_code_cost_usage_USD_total`: Cost by model, session
-- `claude_code_token_usage_tokens_total`: Tokens by type (input/output/cacheRead/cacheCreation)
-- `claude_code_active_time_seconds_total`: Session duration by type (cli/user)
-- `claude_code_session_count_total`: Session counter
+When `CLAUDE_CODE_ENABLE_TELEMETRY=1`, Claude Code exports the following metrics:
 
-Labels: `model`, `session_id`, `terminal_type`, `user_id`, `type`
+**Core Usage Metrics:**
+- `claude_code.cost.usage` → Cost by model, session (USD)
+- `claude_code.token.usage` → Tokens by type (input/output/cacheRead/cacheCreation)
+- `claude_code.active_time.total` → Session duration by type (cli/user)
+- `claude_code.session.count` → Session counter
+
+**Development Activity Metrics:**
+- `claude_code.lines_of_code.count` → Lines changed by type (added/removed)
+- `claude_code.pull_request.count` → Pull requests created
+- `claude_code.commit.count` → Git commits created
+- `claude_code.code_edit_tool.decision` → Code edit decisions (accept/reject by tool, language, source)
+
+**Standard Labels:** `model`, `session_id`, `terminal_type`, `user_id`, `type`
+
+Note: Prometheus converts metric names (`.` → `_`, appends `_total` for counters)
+
+## Dashboard Panels
+
+The Grafana dashboard includes 16 panels across multiple categories:
+
+**Summary Stats (Row 1):**
+1. Total Cost (USD) - Current session/total cost
+2. Total Tokens Used - Aggregate token count
+3. Total Active Time - Session duration in seconds
+4. Total Sessions - Session counter
+
+**Time Series Charts (Row 2):**
+5. Cost by Model - Cost trends per model over time
+6. Token Usage by Type - Token consumption by type (input/output/cache) over time
+
+**Analysis Panels (Row 3):**
+7. Cost Distribution by Model - Pie chart showing cost breakdown
+8. Cache Hit Rate - Gauge showing cache effectiveness (cacheRead / (cacheRead + input))
+9. Active Time by Type - Bar chart of user vs CLI time
+
+**Details Table (Row 4):**
+10. Session Details - Table with session_id, model, terminal, and cost
+
+**Development Activity (Row 5):**
+11. Total Lines Changed - Sum of added + removed lines
+12. Pull Requests Created - PR counter
+13. Commits Created - Commit counter
+14. Code Edit Decisions - Total accept/reject decisions
+
+**Development Trends (Row 6):**
+15. Lines of Code Changes - Time series of added vs removed lines
+16. Code Edit Tool Decisions - Stacked time series of tool decisions by type and outcome
 
 ## Configuration Changes
 

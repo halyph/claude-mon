@@ -1,1 +1,17 @@
-.claude
+# Claude Code
+.claude/
+
+# Docker volumes and data
+data/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/

@@ -28,7 +28,13 @@ Claude Code → OTLP (gRPC port 4317) → OTel Collector → {Prometheus, Loki} 
 
 ## Common Commands
 
-### Start the monitoring stack
+### Quick setup (automated)
+```bash
+./setup.sh
+```
+This script starts all services, configures Grafana data sources, and imports the dashboard.
+
+### Start the monitoring stack (manual)
 ```bash
 docker-compose up -d
 ```
@@ -61,10 +67,11 @@ docker-compose ps
 ## Configuration Files
 
 - **docker-compose.yml**: Defines all services and their networking
-- **otel-config.yaml**: Configures OTel Collector receivers, exporters, and pipelines
+- **config/otel-collector.yaml**: Configures OTel Collector receivers, exporters, and pipelines
   - Metrics pipeline: OTLP → Prometheus exporter
   - Logs pipeline: OTLP → Loki exporter + console logging
-- **prometheus-config.yaml**: Configures Prometheus scrape targets
+- **config/prometheus.yaml**: Configures Prometheus scrape targets
+- **config/grafana/dashboards/**: Grafana dashboard definitions
 
 ## Making Configuration Changes
 

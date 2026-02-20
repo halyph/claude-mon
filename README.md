@@ -28,23 +28,27 @@ graph LR
 
 ## Dashboard Preview
 
-### Summary Statistics
-![Summary Statistics](images/dashboard/01-dashboard-summary-stats.png)
+### Metrics Dashboard
+*URL: http://localhost:3000/d/claude-code-monitoring*
 
-### Time Series Analysis
-![Time Series Analysis](images/dashboard/02-dashboard-time-series.png)
+| Panel | Preview |
+|-------|---------|
+| **Summary Statistics** | [![Summary Statistics](images/dashboard/metrics/01-dashboard-summary-stats.png)](images/dashboard/metrics/01-dashboard-summary-stats.png) |
+| **Time Series Analysis** | [![Time Series Analysis](images/dashboard/metrics/02-dashboard-time-series.png)](images/dashboard/metrics/02-dashboard-time-series.png) |
+| **Analysis & Efficiency** | [![Analysis and Efficiency](images/dashboard/metrics/03-dashboard-analysis-efficiency.png)](images/dashboard/metrics/03-dashboard-analysis-efficiency.png) |
+| **Session Details** | [![Session Details](images/dashboard/metrics/04-dashboard-session-details.png)](images/dashboard/metrics/04-dashboard-session-details.png) |
+| **Development Activity** | [![Development Activity](images/dashboard/metrics/05-dashboard-dev-activity.png)](images/dashboard/metrics/05-dashboard-dev-activity.png) |
+| **Development Trends** | [![Development Trends](images/dashboard/metrics/06-dashboard-dev-trends.png)](images/dashboard/metrics/06-dashboard-dev-trends.png) |
 
-### Analysis & Efficiency
-![Analysis and Efficiency](images/dashboard/03-dashboard-analysis-efficiency.png)
+### Logs Dashboard
+*URL: http://localhost:3000/d/claude-code-logs*
 
-### Session Details
-![Session Details](images/dashboard/04-dashboard-session-details.png)
-
-### Development Activity
-![Development Activity](images/dashboard/05-dashboard-dev-activity.png)
-
-### Development Trends
-![Development Trends](images/dashboard/06-dashboard-dev-trends.png)
+| Panel | Preview | Description |
+|-------|---------|-------------|
+| **Log Overview** | [![Log Overview](images/dashboard/logs/01-logs-overview.png)](images/dashboard/logs/01-logs-overview.png) | Total entries, active sessions, log rate, distribution |
+| **Real-time Stream** | [![Real-time Log Stream](images/dashboard/logs/02-logs-stream.png)](images/dashboard/logs/02-logs-stream.png) | Live streaming log viewer |
+| **Log Analysis** | [![Log Analysis](images/dashboard/logs/03-logs-analysis.png)](images/dashboard/logs/03-logs-analysis.png) | Volume over time, rate by session |
+| **Session Details** | [![Session Details](images/dashboard/logs/04-logs-session-details.png)](images/dashboard/logs/04-logs-session-details.png) | Sessions table, activity by model |
 
 ## Prerequisites
 
@@ -63,7 +67,7 @@ graph LR
 This automatically:
 - Starts all services
 - Configures Grafana data sources
-- Imports the monitoring dashboard
+- Imports metrics and logs dashboards
 
 ### 2. Enable Telemetry
 
@@ -83,9 +87,11 @@ Edit `~/.claude/settings.json`:
 
 Restart Claude Code to apply changes.
 
-### 3. View Dashboard
+### 3. View Dashboards
 
-Open: http://localhost:3000/d/claude-code-monitoring
+Open Grafana dashboards:
+- **Metrics**: http://localhost:3000/d/claude-code-monitoring
+- **Logs**: http://localhost:3000/d/claude-code-logs
 
 Generate some telemetry:
 
@@ -101,12 +107,15 @@ claude "test telemetry"
 - **Cache efficiency** - Cache hit rates
 - **Development metrics** - Lines changed, commits, pull requests
 - **Code editing** - Tool decisions and outcomes
+- **Logs** - Real-time streaming logs with session-level analysis
 
 ## Service URLs
 
 | Service | URL | Purpose |
 |---------|-----|---------|
-| Grafana | http://localhost:3000 | Main dashboard |
+| Grafana | http://localhost:3000 | Dashboard UI |
+| Metrics Dashboard | http://localhost:3000/d/claude-code-monitoring | Token usage, costs, development activity |
+| Logs Dashboard | http://localhost:3000/d/claude-code-logs | Real-time log streaming and analysis |
 | Prometheus | http://localhost:9090 | Metrics query UI |
 | Loki | http://localhost:3100 | Logs API |
 

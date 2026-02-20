@@ -56,43 +56,58 @@ curl -s -X POST \
     "access": "proxy"
   }' > /dev/null && echo "   ✓ Loki data source added"
 
-# Import dashboard
-echo "📊 Importing Claude Code dashboard..."
-DASHBOARD_FILE="config/grafana/dashboards/claude-code-monitoring.json"
+# Import dashboards
+echo "📊 Importing Claude Code dashboards..."
 
-if [ -f "$DASHBOARD_FILE" ]; then
-    # Create temporary dashboard file with correct datasource UIDs
-    TEMP_DASHBOARD=$(mktemp)
-    sed 's/"uid": "PROMETHEUS_UID"/"uid": "prometheus-claude-code"/g' "$DASHBOARD_FILE" | \
-    sed 's/"uid": "LOKI_UID"/"uid": "loki-claude-code"/g' > "$TEMP_DASHBOARD"
+# Function to import a dashboard
+import_dashboard() {
+    local DASHBOARD_FILE=$1
+    local DASHBOARD_NAME=$2
 
-    RESPONSE=$(curl -s -X POST \
-      http://localhost:3000/api/dashboards/db \
-      -H 'Content-Type: application/json' \
-      -d @"$TEMP_DASHBOARD")
+    if [ -f "$DASHBOARD_FILE" ]; then
+        # Create temporary dashboard file with correct datasource UIDs
+        TEMP_DASHBOARD=$(mktemp)
+        sed 's/"uid": "PROMETHEUS_UID"/"uid": "prometheus-claude-code"/g' "$DASHBOARD_FILE" | \
+        sed 's/"uid": "LOKI_UID"/"uid": "loki-claude-code"/g' > "$TEMP_DASHBOARD"
 
-    rm "$TEMP_DASHBOARD"
+        RESPONSE=$(curl -s -X POST \
+          http://localhost:3000/api/dashboards/db \
+          -H 'Content-Type: application/json' \
+          -d @"$TEMP_DASHBOARD")
 
-    if echo "$RESPONSE" | grep -q '"status":"success"'; then
-        echo "   ✓ Dashboard imported successfully"
+        rm "$TEMP_DASHBOARD"
+
+        if echo "$RESPONSE" | grep -q '"status":"success"'; then
+            echo "   ✓ $DASHBOARD_NAME imported successfully"
+        else
+            echo "   ⚠️  $DASHBOARD_NAME import failed: $RESPONSE"
+        fi
     else
-        echo "   ⚠️  Dashboard import failed: $RESPONSE"
+        echo "   ✗ Dashboard file not found: $DASHBOARD_FILE"
+        exit 1
     fi
-else
-    echo "   ✗ Dashboard file not found: $DASHBOARD_FILE"
-    exit 1
-fi
+}
+
+# Import metrics dashboard
+import_dashboard "config/grafana/dashboards/claude-code-monitoring.json" "Metrics dashboard"
+
+# Import logs dashboard
+import_dashboard "config/grafana/dashboards/claude-code-logs.json" "Logs dashboard"
 
 echo ""
 echo "✅ Setup complete!"
-echo "" 
+echo ""
 echo "📍 Service URLs:"
 echo "   Grafana:    http://localhost:3000"
 echo "   Prometheus: http://localhost:9090"
 echo "   Loki:       http://localhost:3100"
 echo ""
+echo "📊 Grafana Dashboards:"
+echo "   Metrics:    http://localhost:3000/d/claude-code-monitoring"
+echo "   Logs:       http://localhost:3000/d/claude-code-logs"
+echo ""
 echo "📝 Next steps:"
 echo "   1. Configure Claude Code telemetry in ~/.claude/settings.json"
 echo "   2. Run: claude 'test telemetry'"
-echo "   3. Open Grafana dashboard: http://localhost:3000/d/claude-code-monitoring"
+echo "   3. Open dashboards above to view metrics and logs"
 echo ""

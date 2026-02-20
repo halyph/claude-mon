@@ -50,6 +50,7 @@ Claude Code → OTLP gRPC :4317 → OTel Collector → Prometheus :9090 (metrics
    - Storage: `grafana-data` volume at `/var/lib/grafana`
    - Auth: Anonymous admin enabled (local dev only)
    - Config: Via `setup.sh` using Grafana API
+   - Dashboards: Two pre-configured dashboards (metrics + logs)
 
 ## Data Persistence
 
@@ -71,8 +72,10 @@ Automates full stack initialization:
    - Prometheus: `http://prometheus:9090` (UID: `prometheus-claude-code`, default)
    - Loki: `http://loki:3100` (UID: `loki-claude-code`)
 4. Dynamically updates dashboard datasource references
-5. Imports dashboard from `config/grafana/dashboards/claude-code-monitoring.json`
-6. Returns dashboard URL and next steps
+5. Imports dashboards:
+   - Metrics dashboard: `config/grafana/dashboards/claude-code-monitoring.json`
+   - Logs dashboard: `config/grafana/dashboards/claude-code-logs.json`
+6. Returns dashboard URLs and next steps
 
 **Datasource UID Strategy:**
 - Fixed UIDs prevent "datasource not found" errors on fresh installations
@@ -104,9 +107,13 @@ When `CLAUDE_CODE_ENABLE_TELEMETRY=1`, Claude Code exports the following metrics
 
 Note: Prometheus converts metric names (`.` → `_`, appends `_total` for counters)
 
-## Dashboard Panels
+## Grafana Dashboards
 
-The Grafana dashboard includes 16 panels across multiple categories:
+### Metrics Dashboard (`claude-code-monitoring`)
+
+URL: `http://localhost:3000/d/claude-code-monitoring`
+
+The metrics dashboard includes 16 panels across multiple categories:
 
 **Summary Stats (Row 1):**
 1. Total Cost (USD) - Current session/total cost
@@ -136,6 +143,36 @@ The Grafana dashboard includes 16 panels across multiple categories:
 15. Lines of Code Changes - Time series of added vs removed lines
 16. Code Edit Tool Decisions - Stacked time series of tool decisions by type and outcome
 
+### Logs Dashboard (`claude-code-logs`)
+
+URL: `http://localhost:3000/d/claude-code-logs`
+
+The logs dashboard includes 13 panels focused on log analysis:
+
+**Log Overview (Row 1):**
+1. Total Log Entries - Aggregate count of all log entries
+2. Active Sessions - Number of unique sessions with logs
+3. Current Log Rate - Real-time logs/second metric
+4. Logs by Session - Pie chart showing log distribution per session
+
+**Log Stream (Row 2):**
+5. All Logs (Real-time) - Live streaming log viewer with full details
+
+**Log Analysis (Row 3):**
+6. Log Volume Over Time - Time series of log rate
+7. Log Rate by Session - Stacked time series per session
+
+**Session Details (Row 4):**
+8. Sessions Summary - Table with session ID, model, and log count
+9. Log Activity by Model - Bar chart showing log volume by Claude model
+
+**Features:**
+- Real-time log streaming with 5-second refresh
+- LogQL query support for advanced filtering
+- Session-level log aggregation and analysis
+- Model-based log categorization
+- Automatic label extraction from OTLP resource attributes
+
 ## Configuration Changes
 
 When modifying configs:
@@ -162,8 +199,11 @@ When modifying configs:
 
 - Grafana anonymous auth is enabled (development only)
 - OTel Collector uses contrib image for Loki exporter
-- Dashboard UID: `claude-code-monitoring`
+- Dashboard UIDs:
+  - Metrics: `claude-code-monitoring`
+  - Logs: `claude-code-logs`
 - Datasource UIDs are fixed for reproducibility:
   - Prometheus: `prometheus-claude-code`
   - Loki: `loki-claude-code`
 - No traces pipeline (Claude Code doesn't export traces)
+- Both dashboards auto-refresh every 5 seconds

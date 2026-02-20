@@ -2,7 +2,7 @@
 
 Monitor Claude Code usage, costs, and performance using OpenTelemetry, Prometheus, Loki, and Grafana.
 
-> **Tested with**: Claude Code CLI v2.1.38
+> **Tested with**: Claude Code CLI v2.1.38  
 > **Environment**: macOS with Colima (Docker Desktop alternative)
 
 ## ⚠️ Environment Note
@@ -152,6 +152,14 @@ docker-compose down -v
 ```
 
 ## Available Metrics
+
+> [!TIP]
+> **Official Documentation**: [Claude Code Monitoring & Usage](https://code.claude.com/docs/en/monitoring-usage)
+
+
+> [!NOTE]
+> Metric names below use Prometheus format (dots → underscores, counters get `_total` suffix). Original OpenTelemetry metric names use dots (e.g., `claude_code.cost.usage` becomes `claude_code_cost_usage_USD_total`).*
+
 
 | Metric | Description |
 |--------|-------------|

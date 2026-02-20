@@ -89,6 +89,8 @@ Automates full stack initialization:
 
 ## Metrics Exported by Claude Code
 
+> 📖 **Official Documentation**: [Claude Code Monitoring & Usage](https://code.claude.com/docs/en/monitoring-usage.md)
+
 When `CLAUDE_CODE_ENABLE_TELEMETRY=1`, Claude Code exports the following metrics:
 
 **Core Usage Metrics:**

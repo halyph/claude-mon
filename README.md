@@ -28,17 +28,23 @@ graph LR
 
 ## Dashboard Preview
 
-### Full Dashboard
-![Grafana Dashboard Overview](images/dashboard/dashboard-overview.png)
+### Summary Statistics
+![Summary Statistics](images/dashboard/01-dashboard-summary-stats.png)
 
-### Key Metrics
-![Summary Statistics](images/dashboard/dashboard-stats.png)
+### Time Series Analysis
+![Time Series Analysis](images/dashboard/02-dashboard-time-series.png)
 
-### Trends and Analysis
-![Time Series Charts](images/dashboard/dashboard-trends.png)
+### Analysis & Efficiency
+![Analysis and Efficiency](images/dashboard/03-dashboard-analysis-efficiency.png)
+
+### Session Details
+![Session Details](images/dashboard/04-dashboard-session-details.png)
 
 ### Development Activity
-![Development Metrics](images/dashboard/dashboard-dev-activity.png)
+![Development Activity](images/dashboard/05-dashboard-dev-activity.png)
+
+### Development Trends
+![Development Trends](images/dashboard/06-dashboard-dev-trends.png)
 
 ## Prerequisites
 
